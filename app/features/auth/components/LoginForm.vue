@@ -171,12 +171,6 @@ async function handleSubmit() {
 
           <Button type="submit" :is-loading="isSubmitting" :disabled="!!rateLimitMessage" class="mt-2 w-full">Masuk</Button>
         </form>
-
-        <div class="mt-6 rounded-lg bg-[var(--color-accent-light)] px-4 py-3">
-          <p class="text-xs leading-relaxed text-[var(--color-accent-dark)]">
-            <strong>Password default</strong> adalah NPM Anda sendiri. Demi keamanan, segera ganti password setelah login pertama kali.
-          </p>
-        </div>
       </div>
     </div>
   </div>
