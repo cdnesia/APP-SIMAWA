@@ -1,0 +1,125 @@
+@import 'tailwindcss';
+
+/* Palet "Pendidikan" (biru medium + kuning) sesuai standar UI global - lihat CLAUDE.md.
+   Warna semantik (success/warning/danger/info) tetap konsisten lintas project. */
+:root {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-primary-light: #60a5fa;
+  --color-accent: #f59e0b;
+  --color-accent-dark: #d97706;
+  --color-accent-light: #fef3c7;
+
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-border-dark: #cbd5e1;
+
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-info: #2563eb;
+
+  /* Sidebar SENGAJA punya token warna sendiri, terpisah dari --color-bg/--color-surface -
+     navy gelap ini konstan (tidak ikut berubah saat mode gelap sistem aktif) supaya sidebar jadi
+     elemen branding yang stabil, beda dari area konten yang mengikuti tema. Navy-nya diturunkan
+     dari HUE --color-primary yang sama (bukan slate/abu netral) - supaya biru di konten (tombol,
+     badge, header) dan navy di sidebar terasa satu keluarga warna, cuma beda tingkat gelap-terang,
+     bukan dua biru yang tidak berhubungan. Item menu aktif pakai --color-accent (kuning) sebagai
+     pil solid - kombinasi navy+kuning sesuai palet "Pendidikan". */
+  --color-sidebar-bg: #172554;
+  --color-sidebar-border: #1e3a8a;
+  --color-sidebar-hover-bg: #1e3a8a;
+  --color-sidebar-text: #eff6ff;
+  --color-sidebar-text-muted: #93c5fd;
+  --color-sidebar-active-bg: var(--color-accent);
+  --color-sidebar-active-text: #172554;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: #0f172a;
+    --color-surface: #1e293b;
+    --color-border: #334155;
+    --color-border-dark: #475569;
+
+    --color-text: #f1f5f9;
+    --color-text-muted: #94a3b8;
+
+    --color-primary-light: #93c5fd;
+    --color-accent-light: #451a03;
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-border: #334155;
+  --color-border-dark: #475569;
+
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+
+  --color-primary-light: #93c5fd;
+  --color-accent-light: #451a03;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Browser TIDAK otomatis kasih kursor tangan ke <button> (beda dari <a>/link yang otomatis) -
+   Tailwind preflight juga tidak me-reset ini. Berlaku global sekali di sini supaya semua tombol
+   di seluruh aplikasi konsisten, tidak perlu tambah class satu-satu di tiap komponen. Tombol
+   yang disabled sengaja dikecualikan - class `disabled:cursor-not-allowed` yang sudah dipakai
+   di beberapa tombol (mis. Button.vue) tetap berlaku di atas aturan ini. */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* Transisi perpindahan halaman (dipasangkan dengan app.pageTransition di nuxt.config.ts) - fade
+   + geser tipis, cukup untuk terasa halus tanpa mengganggu (bukan animasi mencolok). */
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* Hormati preferensi pengguna yang minta gerakan minim - transisi jadi instan tanpa animasi. */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active {
+    transition: none;
+  }
+}
