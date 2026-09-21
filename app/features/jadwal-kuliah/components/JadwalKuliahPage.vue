@@ -30,6 +30,7 @@ const { showToast } = useToast();
 const hasShownError = ref(false);
 
 const { data, pending, error } = await useAsyncData('jadwal-kuliah', () => getJadwalKuliah());
+const isLoading = useMinLoading(pending);
 
 const isNotFound = computed(() => (error.value as { statusCode?: number } | null)?.statusCode === 404);
 
@@ -56,13 +57,9 @@ const grouped = computed(() => groupByHari(items.value));
       "
     />
 
-    <div v-if="pending" class="flex flex-col gap-4">
-      <Card v-for="i in 2" :key="i">
-        <div class="animate-pulse space-y-3 p-1">
-          <div v-for="j in 2" :key="j" class="h-10 rounded-lg bg-[var(--color-border)]" />
-        </div>
-      </Card>
-    </div>
+    <Card v-if="isLoading">
+      <PageLoader />
+    </Card>
 
     <Card v-else-if="isNotFound">
       <EmptyState

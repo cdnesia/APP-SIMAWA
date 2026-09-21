@@ -21,6 +21,7 @@ const khsBackLink = computed(() => (periode.value ? `/khs?periode=${periode.valu
 const answers = ref<Record<number, AnswerState>>({});
 
 const { data, pending, error } = await useAsyncData(`edom-${jadwalId.value}`, () => getFormEdom(jadwalId.value));
+const isLoading = useMinLoading(pending);
 
 const isSubmitting = ref(false);
 
@@ -81,15 +82,9 @@ async function handleSubmit() {
       "
     />
 
-    <div v-if="pending" class="flex flex-col gap-4">
-      <Card v-for="i in 3" :key="i">
-        <div class="animate-pulse space-y-3">
-          <div class="h-4 w-3/4 rounded bg-[var(--color-border)]" />
-          <div class="h-9 rounded-lg bg-[var(--color-border)]" />
-          <div class="h-9 rounded-lg bg-[var(--color-border)]" />
-        </div>
-      </Card>
-    </div>
+    <Card v-if="isLoading">
+      <PageLoader />
+    </Card>
 
     <Card v-else-if="error">
       <EmptyState :icon="ArrowLeft" title="Gagal memuat form EDOM" :description="getApiErrorMessage(error, 'Terjadi kesalahan. Coba muat ulang halaman.')">

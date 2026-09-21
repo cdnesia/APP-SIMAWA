@@ -49,6 +49,7 @@ const hasShownIpkError = ref(false);
 const hasShownTagihanError = ref(false);
 
 const { data: profile, pending, error } = await useAsyncData('mahasiswa-me', () => getMyProfile());
+const isProfileLoading = useMinLoading(pending);
 
 watch(error, (err) => {
   if (err && !hasShownError.value) {
@@ -58,6 +59,7 @@ watch(error, (err) => {
 });
 
 const { data: ipkTrend, pending: ipkPending, error: ipkError } = await useAsyncData('dashboard-ipk-trend', () => getIpkTrend());
+const isIpkLoading = useMinLoading(ipkPending);
 
 watch(ipkError, (err) => {
   if (err && !hasShownIpkError.value) {
@@ -67,6 +69,7 @@ watch(ipkError, (err) => {
 });
 
 const { data: tagihan, pending: tagihanPending, error: tagihanError } = await useAsyncData('dashboard-tagihan', () => getRincianTagihanAktif());
+const isTagihanLoading = useMinLoading(tagihanPending);
 
 watch(tagihanError, (err) => {
   if (err && !hasShownTagihanError.value) {
@@ -116,16 +119,8 @@ async function copyKodeBayar(kodeBayar: string) {
     <!-- Profil & grafik IPK sebelahan - grafik full width sendiri kelihatan terlalu besar/kosong,
          dipasangkan dengan profil supaya proporsional. -->
     <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
-    <Card v-if="pending">
-      <div class="grid animate-pulse grid-cols-1 gap-5 sm:grid-cols-2">
-        <div v-for="i in 6" :key="i" class="flex items-start gap-3">
-          <div class="h-9 w-9 shrink-0 rounded-lg bg-[var(--color-border)]" />
-          <div class="w-full space-y-2">
-            <div class="h-3 w-20 rounded bg-[var(--color-border)]" />
-            <div class="h-4 w-32 rounded bg-[var(--color-border)]" />
-          </div>
-        </div>
-      </div>
+    <Card v-if="isProfileLoading">
+      <PageLoader />
     </Card>
 
     <Card v-else-if="error" class="border-[var(--color-danger)]/30">
@@ -232,10 +227,7 @@ async function copyKodeBayar(kodeBayar: string) {
     </Card>
 
     <Card>
-      <div v-if="ipkPending" class="animate-pulse space-y-3 p-1">
-        <div class="h-4 w-40 rounded bg-[var(--color-border)]" />
-        <div class="h-40 rounded-lg bg-[var(--color-border)]" />
-      </div>
+      <PageLoader v-if="isIpkLoading" />
       <p v-else-if="ipkError" class="py-8 text-center text-sm text-[var(--color-danger)]">
         Gagal memuat grafik IPK. Periksa koneksi Anda, atau coba muat ulang halaman.
       </p>
@@ -249,9 +241,7 @@ async function copyKodeBayar(kodeBayar: string) {
         <NuxtLink to="/tagihan" class="text-xs font-semibold text-[var(--color-primary)] hover:underline">Lihat semua</NuxtLink>
       </div>
 
-      <div v-if="tagihanPending" class="animate-pulse space-y-3 p-1">
-        <div v-for="i in 2" :key="i" class="h-14 rounded-lg bg-[var(--color-border)]" />
-      </div>
+      <PageLoader v-if="isTagihanLoading" />
 
       <p v-else-if="tagihanError" class="py-6 text-center text-sm text-[var(--color-danger)]">
         Gagal memuat tagihan. Periksa koneksi Anda.

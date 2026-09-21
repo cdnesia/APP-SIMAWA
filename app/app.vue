@@ -1,8 +1,25 @@
+<script setup lang="ts">
+// Loading pindah halaman DISAMAKAN di seluruh app - dulu cuma progress bar tipis (NuxtLoadingIndicator)
+// yang gampang tidak kelihatan. `page:start`/`page:finish` adalah hook bawaan Nuxt yang menandai
+// AWAL navigasi (component halaman baru mulai di-setup, termasuk data fetch top-level await-nya)
+// sampai SELESAI (halaman baru sudah ter-mount dengan data siap) - persis rentang waktu yang perlu
+// ditutup loading, dipaksa tampil minimal 5 detik lewat useMinLoading() yang sama dipakai semua
+// komponen halaman lain (lihat PageLoader.vue).
+const isNavigating = ref(false);
+const isNavigatingVisible = useMinLoading(isNavigating);
+
+const nuxtApp = useNuxtApp();
+nuxtApp.hook('page:start', () => { isNavigating.value = true; });
+nuxtApp.hook('page:finish', () => { isNavigating.value = false; });
+</script>
+
 <template>
-  <!-- Progress bar tipis di paling atas viewport saat navigasi/fetch data halaman berjalan -
-       bawaan Nuxt (useLoadingIndicator di baliknya), dipakai supaya user dapat feedback instan
-       tanpa harus nunggu skeleton per-halaman muncul dulu. -->
-  <NuxtLoadingIndicator color="var(--color-primary)" :height="3" />
+  <div
+    v-if="isNavigatingVisible"
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--color-bg)]/95 backdrop-blur-sm"
+  >
+    <PageLoader size="lg" title="Memuat halaman..." />
+  </div>
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>

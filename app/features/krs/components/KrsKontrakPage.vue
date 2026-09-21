@@ -40,6 +40,7 @@ const hasShownStatusError = ref(false);
 // Backend POST /krs tetap menolak juga (sumber kebenaran), tapi alert di halaman ini memberi
 // alasan yang jelas di muka, bukan cuma tabel kosong atau toast error setelah mencoba klik.
 const { data: statusSpp, pending: statusPending, error: statusError } = await useAsyncData('krs-status-spp', () => getRincianTagihanAktif());
+const isStatusLoading = useMinLoading(statusPending);
 
 watch(statusError, (err) => {
   if (err && !hasShownStatusError.value) {
@@ -60,6 +61,11 @@ watch(error, (err) => {
     showToast(getApiErrorMessage(err, 'Gagal memuat jadwal yang tersedia.'), 'error');
   }
 });
+
+// `pending && !data` PENTING (lihat komentar di template) - dibungkus useMinLoading() SETELAH
+// dikombinasikan, bukan pending mentah, supaya refresh() pasca-kontrak/batal (yang bukan loading
+// pertama) tidak ikut kena paksaan tampil minimal 5 detik.
+const isJadwalLoading = useMinLoading(computed(() => pending.value && !data.value));
 
 const pendingKontrakId = ref<string | null>(null);
 const pendingBatalkanId = ref<string | null>(null);
@@ -117,10 +123,8 @@ const grouped = computed(() => groupBySemester(items.value));
       </template>
     </PageHeader>
 
-    <div v-if="statusPending" class="flex flex-col gap-4">
-      <div class="animate-pulse rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-        <div class="h-14 rounded-lg bg-[var(--color-border)]" />
-      </div>
+    <div v-if="isStatusLoading" class="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+      <PageLoader />
     </div>
 
     <div
@@ -144,15 +148,14 @@ const grouped = computed(() => groupBySemester(items.value));
     </div>
 
     <template v-else>
-      <!-- `&& !data` PENTING - `pending` juga jadi true tiap kali refresh() dipanggil setelah
-           kontrak/batalkan (lihat handleKontrak/handleBatalkan), bukan cuma saat load pertama.
-           Tanpa syarat ini, seluruh tabel ikut disembunyikan jadi skeleton tiap klik tombol,
-           padahal loading per-aksi seharusnya cukup di tombolnya sendiri (pendingKontrakId/
-           pendingBatalkanId) - data lama tetap ditampilkan sampai refresh selesai. -->
-      <div v-if="pending && !data" class="flex flex-col gap-4">
-        <div v-for="i in 2" :key="i" class="animate-pulse space-y-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-          <div v-for="j in 2" :key="j" class="h-10 rounded-lg bg-[var(--color-border)]" />
-        </div>
+      <!-- `pending && !data` (lihat isJadwalLoading di script) PENTING - `pending` juga jadi true
+           tiap kali refresh() dipanggil setelah kontrak/batalkan (lihat handleKontrak/
+           handleBatalkan), bukan cuma saat load pertama. Tanpa syarat ini, seluruh tabel ikut
+           disembunyikan tiap klik tombol, padahal loading per-aksi seharusnya cukup di tombolnya
+           sendiri (pendingKontrakId/pendingBatalkanId) - data lama tetap ditampilkan sampai
+           refresh selesai. -->
+      <div v-if="isJadwalLoading" class="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+        <PageLoader />
       </div>
 
       <div v-if="error" class="rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/5 p-4 text-sm text-[var(--color-danger)]">

@@ -14,6 +14,10 @@ const npm = ref('');
 const password = ref('');
 const showPassword = ref(false);
 const isSubmitting = ref(false);
+// PageLoader dipaksa tampil minimal 5 detik (lihat useMinLoading.ts) - dipakai komponen loading
+// YANG SAMA dengan semua halaman lain, supaya proses autentikasi terasa seperti "halaman
+// tersendiri" yang jelas, bukan cuma spinner kecil sekejap di tombol.
+const isAuthenticating = useMinLoading(isSubmitting);
 
 // Error rate-limit (429) SENGAJA ditampilkan sebagai banner persisten di atas form, BUKAN toast -
 // toast auto-hilang 3 detik (lihat useToast.ts), padahal sisa waktu tunggunya bisa bermenit-menit
@@ -109,7 +113,18 @@ async function handleSubmit() {
     </div>
 
     <!-- Panel kanan - form login -->
-    <div class="flex w-full flex-1 items-center justify-center px-4 py-10 sm:px-8 lg:w-1/2">
+    <div class="relative flex w-full flex-1 items-center justify-center px-4 py-10 sm:px-8 lg:w-1/2">
+      <!-- Overlay proses autentikasi - SENGAJA dibedakan dari spinner kecil di tombol biasa:
+           login memanggil backend (bisa dipersepsi "macet" kalau cuma tombol yang berputar),
+           jadi seluruh panel form ditutup sebentar dengan status yang jelas ("Memverifikasi...")
+           supaya mahasiswa tahu proses sedang berjalan, bukan form yang diam/hang. -->
+      <div
+        v-if="isAuthenticating"
+        class="absolute inset-0 z-10 flex items-center justify-center bg-[var(--color-bg)]/95 backdrop-blur-sm"
+      >
+        <PageLoader size="lg" title="Memverifikasi akun Anda..." description="Mohon tunggu, proses autentikasi sedang berlangsung" />
+      </div>
+
       <div class="w-full max-w-sm">
         <div class="mb-8 flex items-center gap-2.5 lg:hidden">
           <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--color-primary)] text-white">

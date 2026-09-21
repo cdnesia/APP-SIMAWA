@@ -10,6 +10,7 @@ const { showToast } = useToast();
 const hasShownError = ref(false);
 
 const { data, pending, error } = await useAsyncData('tagihan-cek', () => cekTagihanSaya());
+const isLoading = useMinLoading(pending);
 
 watch(error, (err) => {
   if (err && !hasShownError.value) {
@@ -27,10 +28,8 @@ const totalBelumLunas = computed(() => belumLunas.value.reduce((sum, t) => sum +
   <div class="flex flex-col gap-6">
     <PageHeader title="Tagihan" description="Daftar tagihan keuangan Anda." />
 
-    <Card v-if="pending">
-      <div class="animate-pulse space-y-3 p-1">
-        <div v-for="i in 3" :key="i" class="h-10 rounded-lg bg-[var(--color-border)]" />
-      </div>
+    <Card v-if="isLoading">
+      <PageLoader />
     </Card>
 
     <Card v-else-if="error">

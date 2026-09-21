@@ -29,6 +29,7 @@ function setPeriode(value: string) {
 }
 
 const { data, pending, error } = await useAsyncData('khs-riwayat', () => getRiwayatKhs());
+const isLoading = useMinLoading(pending);
 
 const isNotFound = computed(() => (error.value as { statusCode?: number } | null)?.statusCode === 404);
 const semesterList = computed(() => data.value?.semesterList ?? []);
@@ -101,10 +102,8 @@ async function handleCetak() {
       </template>
     </PageHeader>
 
-    <Card v-if="pending">
-      <div class="animate-pulse space-y-3 p-1">
-        <div v-for="i in 5" :key="i" class="h-10 rounded-lg bg-[var(--color-border)]" />
-      </div>
+    <Card v-if="isLoading">
+      <PageLoader />
     </Card>
 
     <Card v-else-if="isNotFound">

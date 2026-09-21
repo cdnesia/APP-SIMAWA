@@ -31,6 +31,10 @@ const { showToast } = useToast();
 const hasShownError = ref(false);
 
 const { data, pending, error, refresh } = await useAsyncData('kegiatan-mahasiswa', () => getKegiatanMahasiswa());
+// `pending && !data` PENTING (lihat komentar di template) - dibungkus useMinLoading() SETELAH
+// dikombinasikan, bukan pending mentah, supaya refresh() pasca-daftar (yang bukan loading
+// pertama) tidak ikut kena paksaan tampil minimal 5 detik.
+const isLoading = useMinLoading(computed(() => pending.value && !data.value));
 
 watch(error, (err) => {
   if (err && !hasShownError.value) {
@@ -73,19 +77,13 @@ const items = computed(() =>
       </template>
     </PageHeader>
 
-    <!-- `&& !data` PENTING - `pending` juga jadi true tiap kali refresh() dipanggil setelah
-         daftar (lihat handleDaftar), bukan cuma saat load pertama. Tanpa syarat ini, seluruh
-         grid ikut disembunyikan jadi skeleton tiap klik Daftar, padahal loading per-aksi
-         seharusnya cukup di tombolnya sendiri (pendingId). -->
-    <div v-if="pending && !data" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <Card v-for="i in 3" :key="i">
-        <div class="animate-pulse space-y-3 p-1">
-          <div class="h-5 w-40 rounded bg-[var(--color-border)]" />
-          <div class="h-4 w-full rounded bg-[var(--color-border)]" />
-          <div class="h-4 w-2/3 rounded bg-[var(--color-border)]" />
-        </div>
-      </Card>
-    </div>
+    <!-- `pending && !data` (lihat isLoading di script) PENTING - `pending` juga jadi true tiap
+         kali refresh() dipanggil setelah daftar (lihat handleDaftar), bukan cuma saat load
+         pertama. Tanpa syarat ini, seluruh grid ikut disembunyikan tiap klik Daftar, padahal
+         loading per-aksi seharusnya cukup di tombolnya sendiri (pendingId). -->
+    <Card v-if="isLoading">
+      <PageLoader />
+    </Card>
 
     <Card v-else-if="error">
       <p class="py-8 text-center text-sm text-[var(--color-danger)]">

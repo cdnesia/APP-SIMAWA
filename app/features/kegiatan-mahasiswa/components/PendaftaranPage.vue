@@ -18,6 +18,7 @@ const hasShownError = ref(false);
 const daftarPath = `${config.path}/daftar`;
 
 const { data, pending, error } = await useAsyncData('kegiatan-mahasiswa-riwayat', () => getRiwayatKegiatanMahasiswa());
+const isLoading = useMinLoading(pending);
 
 watch(error, (err) => {
   if (err && !hasShownError.value) {
@@ -43,10 +44,8 @@ const riwayat = computed(() => (data.value?.items ?? []).filter((item) => item.t
       </template>
     </PageHeader>
 
-    <Card v-if="pending">
-      <div class="animate-pulse space-y-3 p-1">
-        <div v-for="i in 3" :key="i" class="h-10 rounded-lg bg-[var(--color-border)]" />
-      </div>
+    <Card v-if="isLoading">
+      <PageLoader />
     </Card>
 
     <Card v-else-if="error">
