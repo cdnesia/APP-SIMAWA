@@ -8,6 +8,14 @@ function simawaApiBase(): string {
   return useRuntimeConfig().simawaApiBase;
 }
 
+// Perimeter server-to-server SERVICE-SIMAWA (lihat SERVICE-SIMAWA/src/middlewares/serviceGuard.ts)
+// - WAJIB disertakan di SETIAP fetch ke backend, kalau tidak ditolak 403 walau token/kredensial
+// user-nya valid. Dipisah jadi helper supaya dipakai juga oleh server/api/auth/login.post.ts yang
+// fetch langsung (tidak lewat simawaFetch).
+export function serviceSecretHeader(): Record<string, string> {
+  return { 'X-Service-Secret': useRuntimeConfig().serviceSecret };
+}
+
 export function extractCookieValue(setCookie: string, name: string): string | null {
   const match = setCookie.match(new RegExp(`^${name}=([^;]*)`));
   return match ? decodeURIComponent(match[1]!) : null;
@@ -40,7 +48,7 @@ export async function refreshSimawaSession(event: H3Event): Promise<string | nul
 
     const res = await fetch(`${simawaApiBase()}/auth/refresh`, {
       method: 'POST',
-      headers: { Cookie: `refreshToken=${refreshToken}` },
+      headers: { Cookie: `refreshToken=${refreshToken}`, ...serviceSecretHeader() },
       cache: 'no-store',
     });
 
@@ -79,6 +87,7 @@ export async function simawaFetch(
       ...init,
       headers: {
         ...init.headers,
+        ...serviceSecretHeader(),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       cache: 'no-store',

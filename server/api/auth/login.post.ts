@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
 
   const res = await fetch(`${config.simawaApiBase}/auth/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...serviceSecretHeader() },
     body: JSON.stringify(body),
     cache: 'no-store',
   });

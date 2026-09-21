@@ -5,6 +5,7 @@ import { z } from 'zod';
 // kebetulan lewat jalur kode itu.
 const envSchema = z.object({
   simawaApiBase: z.url('SIMAWA_API_BASE harus URL valid, mis. http://localhost:4000/api'),
+  serviceSecret: z.string().min(1, 'SERVICE_SECRET wajib diisi - lihat .env.example'),
 });
 
 export default defineNitroPlugin(() => {

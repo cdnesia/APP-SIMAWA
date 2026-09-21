@@ -26,9 +26,13 @@ export default defineNuxtConfig({
   // dan self-host font-nya (Plus Jakarta Sans, wajib per standar UI CLAUDE.md) - tidak perlu
   // konfigurasi manual di sini.
   // Env var server-only (TIDAK ada di runtimeConfig.public) - tidak pernah ke-bundle ke client.
-  // Cuma SIMAWA_API_BASE - APP-SIMAWA tidak lagi punya kredensial M2M sendiri ke SERVICE-PUBLIC
+  // SIMAWA_API_BASE - APP-SIMAWA tidak lagi punya kredensial M2M sendiri ke SERVICE-PUBLIC
   // (dipindah ke SERVICE-SIMAWA 2026-09-19, termasuk untuk fitur tagihan yang dulu di sini).
+  // SERVICE_SECRET - shared secret perimeter server-to-server yang WAJIB dikirim di header
+  // X-Service-Secret pada setiap fetch ke SERVICE-SIMAWA (lihat server/utils/simawaApi.ts),
+  // nilainya harus SAMA PERSIS dengan SERVICE_SECRET di .env SERVICE-SIMAWA.
   runtimeConfig: {
     simawaApiBase: process.env.SIMAWA_API_BASE ?? 'http://localhost:4000/api',
+    serviceSecret: process.env.SERVICE_SECRET ?? '',
   },
 });
