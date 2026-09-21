@@ -22,6 +22,8 @@ export interface RiwayatKegiatanItem {
   tipe: string | null;
   biayaPendaftaran: string;
   tanggalPendaftaran: string | null;
+  kodeBayar: string | null;
+  batasAkhirPembayaran: string | null;
 }
 
 export interface RiwayatKegiatanResponse {
@@ -33,4 +35,6 @@ export interface PendaftaranKegiatanResult {
   namaKegiatan: string;
   biayaPendaftaran: string;
   tanggalPendaftaran: string | null;
+  kodeBayar: string | null;
+  batasAkhirPembayaran: string | null;
 }

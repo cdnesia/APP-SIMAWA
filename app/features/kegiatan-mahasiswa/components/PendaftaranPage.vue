@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { History } from '@lucide/vue';
+import { Copy, History } from '@lucide/vue';
 import { getRiwayatKegiatanMahasiswa } from '../services/api';
 import { getKegiatanConfigBySlug } from '../config';
 import { formatRupiah, formatTanggal } from '~/utils/format';
@@ -28,6 +28,17 @@ watch(error, (err) => {
 });
 
 const riwayat = computed(() => (data.value?.items ?? []).filter((item) => item.tipe === config.tipe));
+
+// Sama seperti copyKodeBayar() di DashboardPage.vue - nomor tagihan dipakai mahasiswa sebagai
+// kode bayar/nomor VA saat transfer.
+async function copyKodeBayar(kodeBayar: string) {
+  try {
+    await navigator.clipboard.writeText(kodeBayar);
+    showToast('✓ Kode bayar disalin', 'success');
+  } catch {
+    showToast('✕ Gagal menyalin kode bayar. Coba lagi.', 'error');
+  }
+}
 </script>
 
 <template>
@@ -70,19 +81,36 @@ const riwayat = computed(() => (data.value?.items ?? []).filter((item) => item.t
 
     <div v-else class="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[520px] text-left text-sm">
+        <table class="w-full min-w-[860px] text-left text-sm">
           <thead class="border-b border-[var(--color-border)] bg-[var(--color-bg)] text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
             <tr>
               <th class="px-4 py-3 font-semibold">Nama Kegiatan</th>
-              <th class="px-4 py-3 font-semibold">Biaya</th>
+              <th class="px-4 py-3 font-semibold">Kode Bayar / VA</th>
+              <th class="px-4 py-3 text-right font-semibold">Biaya</th>
               <th class="px-4 py-3 font-semibold">Tanggal Daftar</th>
+              <th class="px-4 py-3 font-semibold">Batas Akhir Pembayaran</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[var(--color-border)]">
             <tr v-for="(item, idx) in riwayat" :key="idx">
               <td class="px-4 py-3 font-medium text-[var(--color-text)]">{{ item.namaKegiatan ?? '-' }}</td>
-              <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ formatRupiah(item.biayaPendaftaran) }}</td>
-              <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ formatTanggal(item.tanggalPendaftaran) }}</td>
+              <td class="whitespace-nowrap px-4 py-3">
+                <div v-if="item.kodeBayar" class="flex items-center gap-2">
+                  <span class="font-mono text-[var(--color-text)]">{{ item.kodeBayar }}</span>
+                  <button
+                    type="button"
+                    class="flex shrink-0 items-center gap-1 rounded-md border border-[var(--color-border-dark)] px-2 py-1 text-xs font-semibold text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)]/10"
+                    @click="copyKodeBayar(item.kodeBayar)"
+                  >
+                    <Copy :size="12" />
+                    Salin
+                  </button>
+                </div>
+                <span v-else class="text-[var(--color-text-muted)]">-</span>
+              </td>
+              <td class="whitespace-nowrap px-4 py-3 text-right text-[var(--color-text-muted)]">{{ formatRupiah(item.biayaPendaftaran) }}</td>
+              <td class="whitespace-nowrap px-4 py-3 text-[var(--color-text-muted)]">{{ formatTanggal(item.tanggalPendaftaran) }}</td>
+              <td class="whitespace-nowrap px-4 py-3 text-[var(--color-text-muted)]">{{ item.batasAkhirPembayaran ? formatTanggal(item.batasAkhirPembayaran) : '-' }}</td>
             </tr>
           </tbody>
         </table>

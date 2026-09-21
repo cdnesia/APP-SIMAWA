@@ -48,8 +48,13 @@ const pendingId = ref<number | null>(null);
 async function handleDaftar(id: number) {
   pendingId.value = id;
   try {
-    await daftarKegiatanMahasiswa(id);
-    showToast(`✓ Berhasil mendaftar ${config.label}`, 'success');
+    const result = await daftarKegiatanMahasiswa(id);
+    // Kode bayar ditampilkan langsung di toast sukses (bukan cuma nanti di halaman Riwayat
+    // Pendaftaran) - mahasiswa tahu seketika kode VA yang harus dibayar, tanpa pindah halaman dulu.
+    showToast(
+      result.kodeBayar ? `✓ Berhasil mendaftar ${config.label}. Kode bayar: ${result.kodeBayar}` : `✓ Berhasil mendaftar ${config.label}`,
+      'success',
+    );
     await refresh();
   } catch (err) {
     showToast(getApiErrorMessage(err, `✕ Gagal mendaftar ${config.label}. Coba lagi.`), 'error');
