@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import faviconUrl from '~/assets/favicon.png';
+
+// Favicon diambil dari app/assets/favicon.png (diproses Vite supaya ter-hash/optimasi),
+// bukan dari public/favicon.ico - link rel="icon" di head menimpa fallback /favicon.ico bawaan Nuxt.
+useHead({
+  link: [{ rel: 'icon', type: 'image/png', href: faviconUrl }],
+});
+
 // Loading pindah halaman DISAMAKAN di seluruh app - dulu cuma progress bar tipis (NuxtLoadingIndicator)
 // yang gampang tidak kelihatan. `page:start`/`page:finish` adalah hook bawaan Nuxt yang menandai
 // AWAL navigasi (component halaman baru mulai di-setup, termasuk data fetch top-level await-nya)
