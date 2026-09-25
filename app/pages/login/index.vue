@@ -6,6 +6,8 @@ import LoginForm from '~/features/auth/components/LoginForm.vue';
 // (async component boundary) yang sempat memicu hydration mismatch di console pas dev - `false`
 // sepenuhnya melewati mekanisme itu, bukan cuma bikin layout kosong.
 definePageMeta({ layout: false });
+
+useHead({ title: 'Masuk' });
 </script>
 
 <template>

@@ -3,7 +3,11 @@ import faviconUrl from '~/assets/favicon.png';
 
 // Favicon diambil dari app/assets/favicon.png (diproses Vite supaya ter-hash/optimasi),
 // bukan dari public/favicon.ico - link rel="icon" di head menimpa fallback /favicon.ico bawaan Nuxt.
+// titleTemplate WAJIB ada - tanpa <title> sama sekali browser memakai URL sebagai judul tab.
+// Tiap halaman (pages/**) cukup set useHead({ title }) -> jadi "<judul> · SIMAWA"; halaman yang
+// tidak set title jatuh ke judul default.
 useHead({
+  titleTemplate: (title) => (title ? `${title} · SIMAWA` : 'SIMAWA · Universitas Muhammadiyah Jambi'),
   link: [{ rel: 'icon', type: 'image/png', href: faviconUrl }],
 });
 
