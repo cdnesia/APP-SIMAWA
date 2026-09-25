@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AlertTriangle, ArrowLeft, CalendarClock, CheckCircle2, ClipboardList, Plus, Receipt, X } from '@lucide/vue';
+import { AlertTriangle, ArrowLeft, CalendarClock, CheckCircle2, ClipboardList, Plus, Receipt, RefreshCw, WifiOff, X } from '@lucide/vue';
 import { batalkanKrs, getJadwalTersedia, kontrakKrs } from '../services/api';
 import type { JadwalTersediaItem } from '../types';
 import { getRincianTagihanAktif } from '~/features/tagihan/services/api';
@@ -35,11 +35,16 @@ const { showToast } = useToast();
 const hasShownError = ref(false);
 const hasShownStatusError = ref(false);
 
-// Cek dulu status kelayakan (syarat SPP TA aktif minimal 60%, dikecualikan penerima KIP Kuliah)
+// Cek dulu status kelayakan (syarat SPP TA aktif minimal 60%, dikecualikan penerima beasiswa penuh terverifikasi)
 // SEBELUM memuat jadwal tersedia - kalau belum lolos, jadwal tidak usah dimuat sama sekali.
 // Backend POST /krs tetap menolak juga (sumber kebenaran), tapi alert di halaman ini memberi
 // alasan yang jelas di muka, bukan cuma tabel kosong atau toast error setelah mencoba klik.
-const { data: statusSpp, pending: statusPending, error: statusError } = await useAsyncData('krs-status-spp', () => getRincianTagihanAktif());
+const {
+  data: statusSpp,
+  pending: statusPending,
+  error: statusError,
+  refresh: refreshStatus,
+} = await useAsyncData('krs-status-spp', () => getRincianTagihanAktif({ kontrakKrs: true }));
 const isStatusLoading = useMinLoading(statusPending);
 
 watch(statusError, (err) => {
@@ -50,6 +55,16 @@ watch(statusError, (err) => {
 });
 
 const bolehKontrak = computed(() => statusSpp.value?.bolehKontrakKrs ?? false);
+
+// Penerima beasiswa penuh terverifikasi: tagihan SPP TA aktif sudah dihapus server di pengecekan
+// status di atas (?kontrakKrs=1) - di sini cuma kasih tahu mahasiswa. Toast di onMounted karena
+// data bisa datang dari SSR (toast container cuma ada di browser).
+function tampilkanToastSppDihapus() {
+  if ((statusSpp.value?.jumlahSppDihapus ?? 0) > 0) {
+    showToast('✓ Tagihan SPP dihapus karena Anda penerima beasiswa penuh', 'success');
+  }
+}
+onMounted(tampilkanToastSppDihapus);
 
 const { data, pending, error, refresh } = await useAsyncData('krs-jadwal-tersedia', () =>
   bolehKontrak.value ? getJadwalTersedia() : Promise.resolve(null),
@@ -66,6 +81,25 @@ watch(error, (err) => {
 // dikombinasikan, bukan pending mentah, supaya refresh() pasca-kontrak/batal (yang bukan loading
 // pertama) tidak ikut kena paksaan tampil minimal 5 detik.
 const isJadwalLoading = useMinLoading(computed(() => pending.value && !data.value));
+
+// Pengecekan status GAGAL (bukan "belum bayar") - mis. SERVICE-PUBLIC tidak bisa dihubungi atau
+// penghapusan SPP penerima beasiswa penuh gagal. Dibedakan dari panel "belum bisa kontrak" supaya
+// mahasiswa tidak disuruh melunasi SPP gara-gara gangguan sistem.
+const isRetryingStatus = ref(false);
+async function handleCobaLagiStatus() {
+  isRetryingStatus.value = true;
+  hasShownStatusError.value = false;
+  try {
+    await refreshStatus();
+    if (!statusError.value) {
+      tampilkanToastSppDihapus();
+      // Jadwal dimuat ulang karena fetch pertamanya mengembalikan null saat status masih gagal.
+      if (bolehKontrak.value) await refresh();
+    }
+  } finally {
+    isRetryingStatus.value = false;
+  }
+}
 
 const pendingKontrakId = ref<string | null>(null);
 const pendingBatalkanId = ref<string | null>(null);
@@ -125,6 +159,30 @@ const grouped = computed(() => groupBySemester(items.value));
 
     <div v-if="isStatusLoading" class="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
       <PageLoader />
+    </div>
+
+    <div
+      v-else-if="statusError"
+      class="flex items-start gap-3 rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/5 p-5"
+    >
+      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-danger)]/10 text-[var(--color-danger)]">
+        <WifiOff :size="18" />
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-semibold text-[var(--color-text)]">Status pembayaran belum bisa dicek</p>
+        <p class="mt-0.5 text-sm text-[var(--color-text-muted)]">
+          Terjadi gangguan saat memeriksa status pembayaran Anda. Silakan coba lagi beberapa saat lagi.
+        </p>
+        <button
+          type="button"
+          :disabled="isRetryingStatus"
+          class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:opacity-60"
+          @click="handleCobaLagiStatus"
+        >
+          <RefreshCw :size="12" :class="{ 'animate-spin': isRetryingStatus }" />
+          {{ isRetryingStatus ? 'Memeriksa...' : 'Coba lagi' }}
+        </button>
+      </div>
     </div>
 
     <div

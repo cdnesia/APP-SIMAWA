@@ -10,8 +10,10 @@ export async function cekTagihanSaya(): Promise<Tagihan[]> {
 }
 
 // Rincian tagihan tahun akademik AKTIF saja (dipakai dashboard) - beda dari cekTagihanSaya()
-// yang seluruh histori. SPP disembunyikan otomatis dari sisi server kalau isPenerimaKipk true.
-export async function getRincianTagihanAktif(): Promise<RincianTagihanAktif> {
-  const res = await apiFetch<ApiSuccess<RincianTagihanAktif>>('/api/simawa/tagihan/rincian-aktif');
+// yang seluruh histori. SPP disembunyikan otomatis dari sisi server kalau isPenerimaBeasiswaPenuh true.
+// `kontrakKrs: true` HANYA dari halaman Kontrak KRS - server sekalian menghapus tagihan SPP TA aktif
+// kalau mahasiswa penerima beasiswa penuh terverifikasi (Dashboard tidak mengirimnya).
+export async function getRincianTagihanAktif({ kontrakKrs = false } = {}): Promise<RincianTagihanAktif> {
+  const res = await apiFetch<ApiSuccess<RincianTagihanAktif>>('/api/simawa/tagihan/rincian-aktif', kontrakKrs ? { query: { kontrakKrs: '1' } } : {});
   return res.data;
 }

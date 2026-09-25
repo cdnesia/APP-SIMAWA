@@ -78,7 +78,7 @@ watch(tagihanError, (err) => {
   }
 });
 
-// Rincian yang HARUS DIBAYAR = belum lunas saja (SPP untuk penerima KIP Kuliah sudah disaring
+// Rincian yang HARUS DIBAYAR = belum lunas saja (SPP untuk penerima beasiswa penuh terverifikasi sudah disaring
 // dari sisi server, lihat SERVICE-SIMAWA::getRincianTagihanAktif - tidak perlu disaring lagi di sini).
 const tagihanBelumLunas = computed(() => (tagihan.value?.items ?? []).filter((t) => Number(t.nominal_ditagih) > Number(t.nominal_terbayar)));
 const totalTagihanBelumLunas = computed(() =>
@@ -251,7 +251,7 @@ async function copyKodeBayar(kodeBayar: string) {
         <CheckCircle2 :size="28" class="text-[var(--color-success)]" />
         <p class="text-sm font-semibold text-[var(--color-text)]">Tidak ada tagihan tahun ini</p>
         <p class="text-xs text-[var(--color-text-muted)]">
-          {{ tagihan?.isPenerimaKipk ? 'SPP tidak dikenakan karena Anda penerima KIP Kuliah.' : 'Tidak ada tagihan yang perlu dibayar saat ini.' }}
+          {{ tagihan?.isPenerimaBeasiswaPenuh ? 'SPP tidak dikenakan karena Anda penerima beasiswa penuh.' : 'Tidak ada tagihan yang perlu dibayar saat ini.' }}
         </p>
       </div>
 
@@ -308,8 +308,8 @@ async function copyKodeBayar(kodeBayar: string) {
           </div>
         </div>
 
-        <p v-if="tagihan?.isPenerimaKipk" class="rounded-lg bg-[var(--color-success)]/10 px-3 py-2 text-xs text-[var(--color-success)]">
-          SPP tidak ditampilkan - sudah dijamin KIP Kuliah.
+        <p v-if="tagihan?.isPenerimaBeasiswaPenuh" class="rounded-lg bg-[var(--color-success)]/10 px-3 py-2 text-xs text-[var(--color-success)]">
+          SPP tidak ditampilkan - sudah ditanggung penuh beasiswa.
         </p>
       </div>
     </Card>
