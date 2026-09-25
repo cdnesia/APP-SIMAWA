@@ -10,20 +10,19 @@ import {
   FileBarChart,
   Flag,
   GraduationCap,
+  HandCoins,
   LayoutDashboard,
   LogOut,
   Menu,
   Users,
-  Users2,
   X,
 } from '@lucide/vue';
 
 // Semua path di sini adalah leaf route, jadi pencocokan halaman aktif/judul pakai exact match.
 // Dikelompokkan mengikuti pola project SIMAWA-REACTJS (navConfig.ts): grup tanpa label buat menu
 // utama, lalu grup berlabel per kategori - beda dari SIMAWA-REACTJS yang juga punya menu lain
-// (Biodata, Riwayat Beasiswa, Wisuda), yang di sini SENGAJA belum ditambahkan karena halamannya
-// memang belum dibangun di APP-SIMAWA - menambah entri untuk fitur yang tidak ada cuma bikin
-// dead link.
+// (Biodata, Wisuda), yang di sini SENGAJA belum ditambahkan karena halamannya memang belum
+// dibangun di APP-SIMAWA - menambah entri untuk fitur yang tidak ada cuma bikin dead link.
 const NAV_GROUPS = [
   {
     label: '',
@@ -53,7 +52,7 @@ const NAV_GROUPS = [
   },
   {
     label: 'Lainnya',
-    items: [{ label: 'Kegiatan Mahasiswa', icon: Users2, path: '/kegiatan-mahasiswa', enabled: false }],
+    items: [{ label: 'Riwayat Beasiswa', icon: HandCoins, path: '/beasiswa', enabled: true }],
   },
 ];
 
