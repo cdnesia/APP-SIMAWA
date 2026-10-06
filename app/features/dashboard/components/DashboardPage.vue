@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  AlertTriangle,
   Award,
   Banknote,
   BookMarked,
@@ -68,8 +69,20 @@ watch(ipkError, (err) => {
   }
 });
 
-const { data: tagihan, pending: tagihanPending, error: tagihanError } = await useAsyncData('dashboard-tagihan', () => getRincianTagihanAktif());
+// buatSpp: SPP TA aktif dibuat otomatis oleh server kalau belum ada (kecuali penerima beasiswa
+// penuh terverifikasi, termasuk KIP Kuliah) - lihat SERVICE-SIMAWA::getRincianTagihanAktif.
+const { data: tagihan, pending: tagihanPending, error: tagihanError } = await useAsyncData('dashboard-tagihan', () => getRincianTagihanAktif({ buatSpp: true }));
 const isTagihanLoading = useMinLoading(tagihanPending);
+
+// Toast di onMounted karena data bisa datang dari SSR (toast container cuma ada di browser) -
+// pola sama seperti toast SPP dihapus di halaman Kontrak KRS.
+onMounted(() => {
+  if (tagihan.value?.sppDibuat) {
+    showToast('✓ Tagihan SPP tahun ini berhasil diterbitkan', 'success');
+  } else if (tagihan.value?.gagalBuatSpp) {
+    showToast(`✕ Gagal menerbitkan tagihan SPP: ${tagihan.value.gagalBuatSpp}`, 'error');
+  }
+});
 
 watch(tagihanError, (err) => {
   if (err && !hasShownTagihanError.value) {
@@ -246,6 +259,16 @@ async function copyKodeBayar(kodeBayar: string) {
       <p v-else-if="tagihanError" class="py-6 text-center text-sm text-[var(--color-danger)]">
         Gagal memuat tagihan. Periksa koneksi Anda.
       </p>
+
+      <!-- SPP gagal dibuat otomatis: JANGAN tampil sebagai "tidak ada tagihan" (centang hijau) karena
+           SPP-nya justru belum terbit, mahasiswa perlu tahu harus menghubungi keuangan. -->
+      <div v-else-if="tagihanBelumLunas.length === 0 && tagihan?.gagalBuatSpp" class="flex flex-col items-center gap-2 py-6 text-center">
+        <AlertTriangle :size="28" class="text-[var(--color-warning)]" />
+        <p class="text-sm font-semibold text-[var(--color-text)]">Tagihan SPP belum bisa diterbitkan</p>
+        <p class="max-w-md text-xs text-[var(--color-text-muted)]">
+          {{ tagihan.gagalBuatSpp }}. Muat ulang halaman ini nanti, atau hubungi bagian keuangan jika masalah berlanjut.
+        </p>
+      </div>
 
       <div v-else-if="tagihanBelumLunas.length === 0" class="flex flex-col items-center gap-2 py-6 text-center">
         <CheckCircle2 :size="28" class="text-[var(--color-success)]" />

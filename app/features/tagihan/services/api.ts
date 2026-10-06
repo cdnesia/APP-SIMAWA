@@ -13,7 +13,12 @@ export async function cekTagihanSaya(): Promise<Tagihan[]> {
 // yang seluruh histori. SPP disembunyikan otomatis dari sisi server kalau isPenerimaBeasiswaPenuh true.
 // `kontrakKrs: true` HANYA dari halaman Kontrak KRS - server sekalian menghapus tagihan SPP TA aktif
 // kalau mahasiswa penerima beasiswa penuh terverifikasi (Dashboard tidak mengirimnya).
-export async function getRincianTagihanAktif({ kontrakKrs = false } = {}): Promise<RincianTagihanAktif> {
-  const res = await apiFetch<ApiSuccess<RincianTagihanAktif>>('/api/simawa/tagihan/rincian-aktif', kontrakKrs ? { query: { kontrakKrs: '1' } } : {});
+// `buatSpp: true` HANYA dari Dashboard - server membuat tagihan SPP TA aktif otomatis kalau belum ada
+// (dan mahasiswa bukan penerima beasiswa penuh terverifikasi), hasilnya di `sppDibuat`/`gagalBuatSpp`.
+export async function getRincianTagihanAktif({ kontrakKrs = false, buatSpp = false } = {}): Promise<RincianTagihanAktif> {
+  const query: Record<string, string> = {};
+  if (kontrakKrs) query.kontrakKrs = '1';
+  if (buatSpp) query.buatSpp = '1';
+  const res = await apiFetch<ApiSuccess<RincianTagihanAktif>>('/api/simawa/tagihan/rincian-aktif', { query });
   return res.data;
 }

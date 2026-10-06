@@ -18,4 +18,8 @@ export interface RincianTagihanAktif {
   // Jumlah tagihan SPP yang baru dihapus server di request ini (cuma bisa > 0 dari halaman
   // Kontrak KRS, lihat getRincianTagihanAktif({ kontrakKrs: true })).
   jumlahSppDihapus: number;
+  // Tagihan SPP TA aktif baru dibuat otomatis di request ini (cuma bisa true dari Dashboard, lihat
+  // getRincianTagihanAktif({ buatSpp: true })). `gagalBuatSpp` berisi alasan kalau pembuatannya gagal.
+  sppDibuat: boolean;
+  gagalBuatSpp: string | null;
 }
