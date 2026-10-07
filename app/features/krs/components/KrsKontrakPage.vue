@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AlertTriangle, ArrowLeft, CalendarClock, CheckCircle2, ClipboardList, Plus, Receipt, RefreshCw, WifiOff, X } from '@lucide/vue';
+import { AlertTriangle, ArrowLeft, Ban, CalendarClock, CheckCircle2, ClipboardList, Plus, Receipt, RefreshCw, WifiOff, X } from '@lucide/vue';
 import { batalkanKrs, getJadwalTersedia, kontrakKrs } from '../services/api';
 import type { JadwalTersediaItem } from '../types';
 import { getRincianTagihanAktif } from '~/features/tagihan/services/api';
@@ -10,6 +10,20 @@ function formatJam(value: string | null) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+}
+
+// Kapasitas kelas = kuota ruang (backend). Kelas tanpa kuota (kapasitas null) tidak dibatasi.
+// Backend POST /krs tetap jadi sumber kebenaran (cek ulang di dalam transaksi), status di sini
+// cuma supaya mahasiswa tahu di muka dan tidak mengklik kelas yang sudah penuh.
+function isPenuh(item: JadwalTersediaItem) {
+  return item.sisaKursi !== null && item.sisaKursi <= 0;
+}
+
+function kuotaTone(item: JadwalTersediaItem) {
+  if (item.kapasitas === null) return 'text-[var(--color-text-muted)]';
+  if (isPenuh(item)) return 'text-[var(--color-danger)] font-semibold';
+  if (item.jumlahPeserta / item.kapasitas >= 0.9) return 'text-[var(--color-warning)] font-semibold';
+  return 'text-[var(--color-text)]';
 }
 
 // Kelompokkan berdasarkan semester kurikulum mata kuliah (1, 3, 5, ...) - standar tampilan KRS
@@ -242,7 +256,7 @@ const grouped = computed(() => groupBySemester(items.value));
             <span class="text-xs text-[var(--color-text-muted)]">{{ groupItems.length }} mata kuliah</span>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full min-w-[820px] text-left text-sm">
+            <table class="w-full min-w-[900px] text-left text-sm">
               <thead class="border-b border-[var(--color-border)] text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
                 <tr>
                   <th class="px-4 py-3 font-semibold">Kode</th>
@@ -251,6 +265,7 @@ const grouped = computed(() => groupBySemester(items.value));
                   <th class="px-4 py-3 font-semibold">Hari</th>
                   <th class="px-4 py-3 font-semibold">Jam</th>
                   <th class="px-4 py-3 font-semibold">Ruang</th>
+                  <th class="px-4 py-3 text-right font-semibold">Kuota</th>
                   <th class="px-4 py-3 font-semibold">Dosen</th>
                   <th class="w-32 px-4 py-3 font-semibold">Aksi</th>
                 </tr>
@@ -272,6 +287,12 @@ const grouped = computed(() => groupBySemester(items.value));
                     {{ item.namaHari && formatJam(item.jamMulai) && formatJam(item.jamSelesai) ? `${formatJam(item.jamMulai)}-${formatJam(item.jamSelesai)}` : '-' }}
                   </td>
                   <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ item.namaRuang ?? (item.ruangId ? `Ruang #${item.ruangId}` : '-') }}</td>
+                  <td
+                    :class="['whitespace-nowrap px-4 py-3 text-right', kuotaTone(item)]"
+                    :title="item.kapasitas === null ? 'Kuota ruang belum diatur' : `Sisa ${item.sisaKursi} kursi`"
+                  >
+                    {{ item.kapasitas === null ? '-' : `${item.jumlahPeserta}/${item.kapasitas}` }}
+                  </td>
                   <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ item.namaDosen ?? (item.dosenId ? `Dosen ID ${item.dosenId}` : '-') }}</td>
                   <td class="px-4 py-3">
                     <button
@@ -284,6 +305,14 @@ const grouped = computed(() => groupBySemester(items.value));
                       <X v-else :size="14" />
                       Batalkan
                     </button>
+                    <span
+                      v-else-if="isPenuh(item)"
+                      class="flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text-muted)]"
+                      title="Kelas sudah penuh - pilih kelas lain untuk mata kuliah ini"
+                    >
+                      <Ban :size="14" />
+                      Penuh
+                    </span>
                     <button
                       v-else
                       :disabled="pendingKontrakId !== null"

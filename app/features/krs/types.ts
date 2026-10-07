@@ -40,6 +40,11 @@ export interface JadwalTersediaItem {
   namaRuang: string | null;
   dosenId: number | null;
   namaDosen: string | null;
+  /** Kuota ruang - null kalau kuota ruang belum diisi / tidak diketahui (kelas tidak dibatasi). */
+  kapasitas: number | null;
+  jumlahPeserta: number;
+  /** null kalau kapasitas null. */
+  sisaKursi: number | null;
   sudahDikontrak: boolean;
 }
 
