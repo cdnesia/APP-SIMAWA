@@ -212,8 +212,11 @@ const pageTitle = computed(() => NAV_ITEMS.find((item) => item.path === route.pa
     </div>
 
     <div class="flex h-screen flex-1 flex-col overflow-hidden">
-      <!-- Navbar - diam di tempat, tidak ikut scroll -->
-      <header class="flex shrink-0 items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 sm:px-6">
+      <!-- Navbar - diam di tempat, tidak ikut scroll. `relative z-30` WAJIB: header jadi lapisan
+           sendiri di atas seluruh konten halaman (sticky z-10, dropdown Select2 z-20, tombol
+           disabled ber-opacity yang otomatis membentuk lapisan baru), supaya dropdown profil
+           tidak tertimpa elemen halaman. Tetap di bawah drawer mobile (z-40). -->
+      <header class="relative z-30 flex shrink-0 items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 sm:px-6">
         <button
           class="rounded-lg p-2 text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] lg:hidden"
           aria-label="Buka menu"
@@ -244,7 +247,7 @@ const pageTitle = computed(() => NAV_ITEMS.find((item) => item.path === route.pa
           <div
             v-if="isUserMenuOpen"
             role="menu"
-            class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-2 shadow-lg"
+            class="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-2 shadow-lg"
           >
             <div class="border-b border-[var(--color-border)] px-4 py-2.5">
               <p class="truncate text-sm font-semibold text-[var(--color-text)]">{{ user?.name }}</p>

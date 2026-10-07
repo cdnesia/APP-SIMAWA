@@ -40,7 +40,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
     <div
       v-if="isOpen"
-      class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-1 shadow-lg"
+      class="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] py-1 shadow-lg"
     >
       <button
         v-for="option in options"
