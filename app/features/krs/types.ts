@@ -22,7 +22,9 @@ export interface KrsResponse {
 }
 
 export interface KrsRiwayatResponse {
-  semesterList: KrsResponse[];
+  // isCuti: semester berstatus cuti resmi (tbl_mahasiswa_akm status 'C') - ditampilkan sebagai
+  // keterangan "Cuti", bukan sekadar "belum ada mata kuliah".
+  semesterList: (KrsResponse & { isCuti: boolean })[];
 }
 
 export interface JadwalTersediaItem {

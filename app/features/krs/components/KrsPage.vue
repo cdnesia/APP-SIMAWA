@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ClipboardList, FilePlus2, FileQuestion, Printer } from '@lucide/vue';
+import { ClipboardList, FilePlus2, FileQuestion, PauseCircle, Printer } from '@lucide/vue';
 import { getRiwayatKrs, printKrs } from '../services/api';
 import { formatTahunAkademikLabel } from '~/utils/tahunAkademik';
 import { openPdfPreview } from '~/utils/openPdfPreview';
@@ -74,7 +74,8 @@ async function handleCetak() {
       <template #actions>
         <button
           type="button"
-          :disabled="!selectedSemester || isCetakPending"
+          :disabled="!selectedSemester || selectedSemester.isCuti || isCetakPending"
+          :title="selectedSemester?.isCuti ? 'Tidak ada KRS pada semester cuti' : undefined"
           class="flex items-center gap-1.5 rounded-lg border border-[var(--color-border-dark)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg)] disabled:cursor-not-allowed disabled:opacity-60"
           @click="handleCetak"
         >
@@ -115,7 +116,7 @@ async function handleCetak() {
         <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">Periode</label>
         <Select2
           :model-value="selectedSemester?.kodeTahunAkademik ?? ''"
-          :options="semesterList.map((s, idx) => ({ value: s.kodeTahunAkademik, label: `Semester ${idx + 1} - ${formatTahunAkademikLabel(s.kodeTahunAkademik)}` }))"
+          :options="semesterList.map((s, idx) => ({ value: s.kodeTahunAkademik, label: `Semester ${idx + 1} - ${formatTahunAkademikLabel(s.kodeTahunAkademik)}${s.isCuti ? ' (Cuti)' : ''}` }))"
           @update:model-value="setPeriode"
         />
       </div>
@@ -127,7 +128,14 @@ async function handleCetak() {
         </div>
 
         <div class="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
-          <div v-if="selectedSemester.items.length === 0" class="px-6 py-16 text-center text-sm text-[var(--color-text-muted)]">
+          <div v-if="selectedSemester.isCuti" class="flex flex-col items-center gap-2 px-6 py-16 text-center">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-info)]/10 text-[var(--color-info)]">
+              <PauseCircle :size="20" />
+            </div>
+            <p class="text-sm font-semibold text-[var(--color-text)]">Cuti Akademik</p>
+            <p class="max-w-sm text-sm text-[var(--color-text-muted)]">Anda berstatus cuti pada periode ini, sehingga tidak ada mata kuliah yang dikontrak.</p>
+          </div>
+          <div v-else-if="selectedSemester.items.length === 0" class="px-6 py-16 text-center text-sm text-[var(--color-text-muted)]">
             Belum ada mata kuliah yang dikontrak pada periode ini.
           </div>
           <div v-else class="overflow-x-auto">

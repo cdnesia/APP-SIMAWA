@@ -23,6 +23,7 @@ import { getIpkTrend } from '~/features/khs/services/api';
 import { getMyProfile } from '~/features/mahasiswa/services/api';
 import { getRincianTagihanAktif } from '~/features/tagihan/services/api';
 import { formatRupiah, formatTanggal } from '~/utils/format';
+import { formatTahunAkademikLabel } from '~/utils/tahunAkademik';
 import IpkTrendChart from './IpkTrendChart.vue';
 
 // Path diisi kalau halamannya sudah jadi - kalau tidak, kartu tetap tampil sebagai "segera hadir"
@@ -69,7 +70,7 @@ watch(ipkError, (err) => {
   }
 });
 
-// buatSpp: SPP TA aktif dibuat otomatis oleh server kalau belum ada (kecuali penerima beasiswa
+// buatSpp: SPP TA giliran (TA aktif, atau mundur kalau pernah cuti) dibuat otomatis oleh server kalau belum ada (kecuali penerima beasiswa
 // penuh terverifikasi, termasuk KIP Kuliah) - lihat SERVICE-SIMAWA::getRincianTagihanAktif.
 const { data: tagihan, pending: tagihanPending, error: tagihanError } = await useAsyncData('dashboard-tagihan', () => getRincianTagihanAktif({ buatSpp: true }));
 const isTagihanLoading = useMinLoading(tagihanPending);
@@ -78,7 +79,9 @@ const isTagihanLoading = useMinLoading(tagihanPending);
 // pola sama seperti toast SPP dihapus di halaman Kontrak KRS.
 onMounted(() => {
   if (tagihan.value?.sppDibuat) {
-    showToast('✓ Tagihan SPP tahun ini berhasil diterbitkan', 'success');
+    const { kodeTahunAkademik, kodeTahunAkademikSpp } = tagihan.value;
+    const labelTa = kodeTahunAkademikSpp === kodeTahunAkademik ? 'tahun ini' : formatTahunAkademikLabel(kodeTahunAkademikSpp);
+    showToast(`✓ Tagihan SPP ${labelTa} berhasil diterbitkan`, 'success');
   } else if (tagihan.value?.gagalBuatSpp) {
     showToast(`✕ Gagal menerbitkan tagihan SPP: ${tagihan.value.gagalBuatSpp}`, 'error');
   }
@@ -317,6 +320,11 @@ async function copyKodeBayar(kodeBayar: string) {
                       <Receipt :size="12" class="shrink-0 text-[var(--color-text-muted)]" />
                       <span class="font-semibold text-[var(--color-text)]">{{ item.jenis_tagihan }}</span>
                     </div>
+                    <!-- SPP mahasiswa pernah cuti berasal dari TA giliran, bukan TA aktif - tampilkan TA-nya
+                         supaya tidak dikira salah tagih. -->
+                    <p v-if="item.tahun_akademik !== tagihan?.kodeTahunAkademik" class="mt-0.5 text-xs text-[var(--color-text-muted)]">
+                      {{ formatTahunAkademikLabel(item.tahun_akademik) }}
+                    </p>
                   </td>
                   <td class="whitespace-nowrap px-4 py-3 text-right text-[var(--color-text)]">{{ formatRupiah(item.total_tagihan) }}</td>
                   <td class="whitespace-nowrap px-4 py-3 text-right text-[var(--color-text)]">{{ formatRupiah(item.nominal_ditagih) }}</td>

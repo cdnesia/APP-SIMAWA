@@ -28,7 +28,9 @@ export interface KhsResponse {
 }
 
 export interface KhsRiwayatResponse {
-  semesterList: KhsResponse[];
+  // isCuti: semester berstatus cuti resmi (tbl_mahasiswa_akm status 'C') - ditampilkan sebagai
+  // keterangan "Cuti", bukan sekadar "belum ada nilai".
+  semesterList: (KhsResponse & { isCuti: boolean })[];
 }
 
 export interface IpkTrendItem {

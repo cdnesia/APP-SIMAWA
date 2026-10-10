@@ -70,6 +70,14 @@ watch(statusError, (err) => {
 
 const bolehKontrak = computed(() => statusSpp.value?.bolehKontrakKrs ?? false);
 
+// Mahasiswa pernah cuti: SPP yang wajib dibayar adalah TA giliran (mundur dari TA aktif), jadi
+// alert harus menyebut TA itu secara eksplisit - "tahun akademik ini" akan menyesatkan.
+const labelTaSpp = computed(() => {
+  const s = statusSpp.value;
+  if (!s || s.kodeTahunAkademikSpp === s.kodeTahunAkademik) return null;
+  return formatTahunAkademikLabel(s.kodeTahunAkademikSpp);
+});
+
 // Penerima beasiswa penuh terverifikasi: tagihan SPP TA aktif sudah dihapus server di pengecekan
 // status di atas (?kontrakKrs=1) - di sini cuma kasih tahu mahasiswa. Toast di onMounted karena
 // data bisa datang dari SSR (toast container cuma ada di browser).
@@ -209,7 +217,7 @@ const grouped = computed(() => groupBySemester(items.value));
       <div class="min-w-0 flex-1">
         <p class="text-sm font-semibold text-[var(--color-text)]">Anda belum bisa kontrak KRS</p>
         <p class="mt-0.5 text-sm text-[var(--color-text-muted)]">
-          Anda belum membayar SPP tahun akademik ini<template v-if="statusSpp"> (saat ini <strong class="text-[var(--color-text)]">{{ statusSpp.persentaseSpp }}%</strong>)</template>.
+          Anda belum membayar SPP <template v-if="labelTaSpp">tahun akademik <strong class="text-[var(--color-text)]">{{ labelTaSpp }}</strong> (dilanjutkan dari semester sebelum cuti)</template><template v-else>tahun akademik ini</template><template v-if="statusSpp"> (saat ini <strong class="text-[var(--color-text)]">{{ statusSpp.persentaseSpp }}%</strong>)</template>.
           Lunasi SPP dulu agar jadwal yang tersedia untuk dikontrak bisa muncul di sini.
         </p>
         <NuxtLink to="/tagihan" class="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-primary)] hover:underline">
