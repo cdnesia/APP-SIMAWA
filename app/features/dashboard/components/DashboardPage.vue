@@ -96,10 +96,9 @@ watch(tagihanError, (err) => {
 
 // Rincian yang HARUS DIBAYAR = belum lunas saja (SPP untuk penerima beasiswa penuh terverifikasi sudah disaring
 // dari sisi server, lihat SERVICE-SIMAWA::getRincianTagihanAktif - tidak perlu disaring lagi di sini).
-const tagihanBelumLunas = computed(() => (tagihan.value?.items ?? []).filter((t) => Number(t.nominal_ditagih) > Number(t.nominal_terbayar)));
-const totalTagihanBelumLunas = computed(() =>
-  tagihanBelumLunas.value.reduce((sum, t) => sum + (Number(t.nominal_ditagih) - Number(t.nominal_terbayar)), 0),
-);
+// Lunas/sisa dihitung dari total asli, BUKAN nominal_ditagih (itu sisa versi bank) - lihat ~/utils/tagihan.ts.
+const tagihanBelumLunas = computed(() => (tagihan.value?.items ?? []).filter((t) => !isTagihanLunas(t)));
+const totalTagihanBelumLunas = computed(() => tagihanBelumLunas.value.reduce((sum, t) => sum + sisaTagihan(t), 0));
 
 const firstName = computed(() => user.value?.name?.split(' ')[0] ?? '');
 
@@ -330,7 +329,7 @@ async function copyKodeBayar(kodeBayar: string) {
                   <td class="whitespace-nowrap px-4 py-3 text-right text-[var(--color-text)]">{{ formatRupiah(item.nominal_ditagih) }}</td>
                   <td class="whitespace-nowrap px-4 py-3 text-right text-[var(--color-text)]">{{ formatRupiah(item.nominal_terbayar) }}</td>
                   <td class="whitespace-nowrap px-4 py-3 text-right font-bold text-[var(--color-danger)]">
-                    {{ formatRupiah(Number(item.nominal_ditagih) - Number(item.nominal_terbayar)) }}
+                    {{ formatRupiah(sisaTagihan(item)) }}
                   </td>
                   <td class="whitespace-nowrap px-4 py-3 text-[var(--color-text-muted)]">{{ formatTanggal(item.waktu_berakhir) }}</td>
                 </tr>

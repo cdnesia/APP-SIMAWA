@@ -20,8 +20,10 @@ watch(error, (err) => {
 });
 
 const items = computed(() => data.value ?? []);
-const belumLunas = computed(() => items.value.filter((t) => Number(t.nominal_ditagih) > Number(t.nominal_terbayar)));
-const totalBelumLunas = computed(() => belumLunas.value.reduce((sum, t) => sum + (Number(t.nominal_ditagih) - Number(t.nominal_terbayar)), 0));
+// Status lunas & sisa dihitung dari total asli (total_tagihan - total_potongan), BUKAN nominal_ditagih -
+// lihat ~/utils/tagihan.ts.
+const belumLunas = computed(() => items.value.filter((t) => !isTagihanLunas(t)));
+const totalBelumLunas = computed(() => belumLunas.value.reduce((sum, t) => sum + sisaTagihan(t), 0));
 </script>
 
 <template>
@@ -67,11 +69,12 @@ const totalBelumLunas = computed(() => belumLunas.value.reduce((sum, t) => sum +
                 <td class="whitespace-nowrap px-4 py-3 font-medium text-[var(--color-text)]">{{ item.nomor_tagihan }}</td>
                 <td class="px-4 py-3 text-[var(--color-text)]">{{ item.jenis_tagihan }}</td>
                 <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ item.tahun_akademik }}</td>
-                <td class="px-4 py-3 text-right text-[var(--color-text)]">{{ formatRupiah(item.nominal_ditagih) }}</td>
+                <td class="px-4 py-3 text-right text-[var(--color-text)]">{{ formatRupiah(totalTagihanBersih(item)) }}</td>
                 <td class="px-4 py-3 text-right text-[var(--color-text)]">{{ formatRupiah(item.nominal_terbayar) }}</td>
+                <td class="px-4 py-3 text-right text-[var(--color-text)]">{{ formatRupiah(sisaTagihan(item)) }}</td>
                 <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ formatTanggal(item.waktu_berakhir) }}</td>
                 <td class="px-4 py-3">
-                  <Badge v-if="Number(item.nominal_ditagih) <= Number(item.nominal_terbayar)" tone="success">
+                  <Badge v-if="isTagihanLunas(item)" tone="success">
                     <CheckCircle2 :size="10" class="mr-1 inline" />Lunas
                   </Badge>
                   <Badge v-else tone="warning"><Clock :size="10" class="mr-1 inline" />Belum Lunas</Badge>
