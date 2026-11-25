@@ -46,6 +46,7 @@ const PETA_PATH: [RegExp, string][] = [
   [/^kegiatan-mahasiswa\/([^/]+)\/daftar$/, 'kegiatan/$1/daftar'],
   [/^tagihan\/cek$/, 'tagihan'],
   [/^tagihan\/rincian-aktif$/, 'tagihan/rincian-aktif'],
+  [/^pertemuan-verifikasi$/, 'pertemuan-verifikasi'], // GET daftar, POST verifikasi { pertemuanIds }
 ];
 
 function petakanPath(path: string): string | null {
