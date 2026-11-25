@@ -95,6 +95,12 @@ export async function simawaFetch(
     }
   }
 
+  // Masih 401 setelah refresh (atau tidak ada refresh token sama sekali) = sesi benar-benar habis: bersihkan semua
+  // cookie sesi (termasuk flag `simawa_session`) supaya middleware auth.global langsung mengarahkan ke /login.
+  if (res.status === 401) {
+    clearSimawaSession(event);
+  }
+
   return res;
 }
 

@@ -21,7 +21,72 @@ type ApiFetchOptions = {
 // $fetch tetap ofetch yang sama saat runtime, cuma di sisi TypeScript "dibutakan" dari route map.
 const rawFetch = $fetch as unknown as (url: string, opts: Record<string, unknown>) => Promise<unknown>;
 
+// 401 dari endpoint ini BUKAN tanda sesi habis (mis. NPM/password salah saat login) - jangan diarahkan ke /login.
+const URL_TANPA_REDIRECT_401 = new Set(['/api/auth/login']);
+
+// Penjaga di browser supaya beberapa request paralel yang sama-sama kena 401 (mis. dashboard memuat beberapa
+// endpoint sekaligus) hanya memicu SATU redirect. Di server tidak dipakai - variabel modul dibagi antar request.
+let sedangKeLogin = false;
+
+function statusDariError(err: unknown): number | undefined {
+  const e = err as { statusCode?: number; status?: number; response?: { status?: number } } | undefined;
+  return e?.statusCode ?? e?.status ?? e?.response?.status;
+}
+
+// Sesi habis: hapus cookie penanda sesi + state user, lalu arahkan ke /login (membawa halaman asal di ?redirect dan
+// ?alasan=sesi-berakhir supaya LoginForm menampilkan peringatan - toast tidak bisa langsung dari SSR).
+// WAJIB dipanggil di dalam nuxtApp.runWithContext (dipanggil setelah await).
+async function arahkanKeLogin(): Promise<boolean> {
+  const opsiCookie = { path: '/' };
+  useCookie('simawa_session', opsiCookie).value = null;
+  useCookie('simawa_csrf', opsiCookie).value = null;
+  if (import.meta.server) {
+    // Saat SSR, Set-Cookie dari panggilan internal /api/** tidak ikut ke browser - cookie httpOnly dihapus di sini.
+    useCookie('simawa_access', { ...opsiCookie, httpOnly: true }).value = null;
+    useCookie('simawa_refresh', { ...opsiCookie, httpOnly: true }).value = null;
+  }
+  useState('auth-user').value = null;
+
+  const route = useRoute();
+  if (route.path === '/login') return false;   // sudah di halaman login (mis. fetchMe sebelum login) - tidak perlu pindah
+  const query: Record<string, string> = { alasan: 'sesi-berakhir' };
+  if (route.fullPath !== '/') query.redirect = route.fullPath;
+  await navigateTo({ path: '/login', query }, { replace: true });
+  return true;
+}
+
 export function apiFetch<T = unknown>(url: string, opts: ApiFetchOptions = {}): Promise<T> {
+  // Diambil SINKRON (sebelum await) - konteks Nuxt di server hilang setelah suspend point.
+  const nuxtApp = useNuxtApp();
+  return tanganiSesiHabis(nuxtApp, url, kirim<T>(url, opts));
+}
+
+async function tanganiSesiHabis<T>(nuxtApp: ReturnType<typeof useNuxtApp>, url: string, permintaan: Promise<T>): Promise<T> {
+  try {
+    return await permintaan;
+  } catch (err) {
+    if (statusDariError(err) !== 401 || URL_TANPA_REDIRECT_401.has(url)) throw err;
+
+    if (import.meta.server) {
+      await nuxtApp.runWithContext(arahkanKeLogin);
+      throw err;
+    }
+
+    if (!sedangKeLogin) {
+      sedangKeLogin = true;
+      try {
+        if (!(await nuxtApp.runWithContext(arahkanKeLogin))) throw err;
+      } finally {
+        sedangKeLogin = false;
+      }
+    }
+    // Sengaja tidak pernah selesai: halaman yang memanggil sedang ditinggalkan menuju /login, jadi jangan sampai
+    // error 401 ini masih memunculkan toast/banner "gagal memuat" sesaat sebelum pindah halaman.
+    return new Promise<T>(() => {});
+  }
+}
+
+function kirim<T>(url: string, opts: ApiFetchOptions): Promise<T> {
   if (import.meta.server) {
     // X-Forwarded-For ikut diteruskan supaya REST-API-SIMAWA tetap melihat IP mahasiswa (bukan IP server Nitro)
     // untuk throttle per IP saat SSR - dihitung SINKRON di sini, sama alasannya dengan useRequestHeaders di atas.

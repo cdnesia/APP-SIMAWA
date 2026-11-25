@@ -13,5 +13,6 @@ export default defineNuxtRouteMiddleware((to) => {
     return;
   }
 
-  if (!hasSession) return navigateTo('/login');
+  // Halaman tujuan dibawa di ?redirect supaya setelah login mahasiswa kembali ke halaman yang tadi dibuka.
+  if (!hasSession) return navigateTo({ path: '/login', query: to.fullPath !== '/' ? { redirect: to.fullPath } : {} });
 });

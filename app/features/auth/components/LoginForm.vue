@@ -8,7 +8,25 @@ const HIGHLIGHTS = [
 
 const { login } = useAuth();
 const router = useRouter();
+const route = useRoute();
 const { showToast } = useToast();
+
+// Tujuan setelah login = ?redirect dari middleware/apiFetch, HANYA path internal ("/..." tapi bukan "//domain-lain")
+// supaya tidak bisa dipakai sebagai open redirect ke situs luar.
+function tujuanSetelahLogin(): string {
+  const redirect = route.query.redirect;
+  if (typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//') && !redirect.startsWith('/login')) {
+    return redirect;
+  }
+  return '/';
+}
+
+// Diarahkan ke sini karena sesi habis (lihat arahkanKeLogin di ~/utils/apiFetch.ts) - beri tahu alasannya.
+onMounted(() => {
+  if (route.query.alasan === 'sesi-berakhir') {
+    showToast('⚠ Sesi Anda telah berakhir. Silakan login kembali.', 'warning');
+  }
+});
 
 const npm = ref('');
 const password = ref('');
@@ -63,7 +81,7 @@ async function handleSubmit() {
   isSubmitting.value = true;
   try {
     await login(npm.value, password.value);
-    router.replace('/');
+    router.replace(tujuanSetelahLogin());
   } catch (err) {
     const statusCode = (err as { statusCode?: number } | undefined)?.statusCode;
     const retryAfterSeconds = (err as { data?: { retryAfterSeconds?: number } } | undefined)?.data?.retryAfterSeconds;
