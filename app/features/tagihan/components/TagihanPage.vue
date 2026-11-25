@@ -65,7 +65,7 @@ const totalBelumLunas = computed(() => belumLunas.value.reduce((sum, t) => sum +
               </tr>
             </thead>
             <tbody class="divide-y divide-[var(--color-border)]">
-              <tr v-for="item in items" :key="item.id" class="transition-colors hover:bg-[var(--color-bg)]">
+              <tr v-for="item in items" :key="item.id_record_tagihan" class="transition-colors hover:bg-[var(--color-bg)]">
                 <td class="whitespace-nowrap px-4 py-3 font-medium text-[var(--color-text)]">{{ item.nomor_tagihan }}</td>
                 <td class="px-4 py-3 text-[var(--color-text)]">{{ item.jenis_tagihan }}</td>
                 <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ item.tahun_akademik }}</td>

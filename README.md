@@ -1,8 +1,9 @@
 # APP-SIMAWA
 
-Portal mahasiswa SIMAWA (Nuxt 4, TypeScript, Tailwind v4). Semua request ke backend dilakukan
-lewat server route Nitro sendiri (pola BFF) — browser tidak pernah bicara langsung ke
-SERVICE-SIMAWA maupun menyimpan token apapun, lihat `server/utils/simawaApi.ts`.
+Portal mahasiswa SIMAWA (Nuxt 4, TypeScript, Tailwind v4). Backend: **REST-API-SIMAWA** (Laravel,
+pengganti SERVICE-SIMAWA). Mahasiswa login langsung dengan NPM + password — APP-SIMAWA TIDAK menyimpan
+client_id/secret maupun shared secret apa pun. Request ke backend tetap lewat server route Nitro supaya token
+login hanya ada di cookie httpOnly (tidak pernah bisa dibaca JavaScript browser), lihat `server/utils/simawaApi.ts`.
 
 ## Menjalankan
 
@@ -11,10 +12,11 @@ npm install
 npm run dev
 ```
 
-Butuh SERVICE-SIMAWA (port 4000) jalan — satu-satunya backend yang dipanggil APP-SIMAWA (lihat
-`.env.example`). SERVICE-PUBLIC (port 4010, fitur tagihan & referensi dosen/ruang) dipanggil
-SERVICE-SIMAWA sendiri, bukan langsung dari sini — APP-SIMAWA tidak punya kredensial M2M ke
-service manapun. Env divalidasi otomatis saat startup lewat `server/plugins/validate-env.ts`
+Butuh REST-API-SIMAWA jalan — satu-satunya backend yang dipanggil APP-SIMAWA. Isi `SIMAWA_API_BASE`
+(base URL TERMASUK `/v1`, lihat `.env.example`); setelah `nuxt build`, atur saat runtime lewat
+`NUXT_SIMAWA_API_BASE`. Tagihan, PDF, dan referensi dosen/ruang diambil REST-API-SIMAWA sendiri — APP-SIMAWA
+tidak punya kredensial ke service manapun. Di REST-API-SIMAWA, `TRUSTED_PROXIES` WAJIB berisi IP server
+APP-SIMAWA (+ IP proxy di depannya, bila ada) agar batas login & throttle per IP memakai IP mahasiswa (`X-Forwarded-For`). Env divalidasi otomatis saat startup lewat `server/plugins/validate-env.ts`
 (Zod) — server langsung gagal dengan pesan jelas kalau ada variabel yang kosong/salah format.
 
 ## Struktur (feature-based, Nuxt 4)
@@ -47,12 +49,13 @@ Halaman di `app/pages/` sengaja dibuat setipis mungkin (cuma render 1 komponen d
   browser saat dipanggil dari sisi server (dalam `useAsyncData` saat SSR), jadi tanpa wrapper ini
   setiap fetch data saat render awal balas 401. Selalu pakai `apiFetch`, jangan `$fetch` langsung,
   di file `services/api.ts` manapun.
-- `server/api/` — server route Nitro (proxy ke SERVICE-SIMAWA, pegang cookie httpOnly lewat h3
-  `getCookie`/`setCookie`). `server/api/simawa/[...path].ts` adalah catch-all proxy generik untuk
-  SEMUA resource (mahasiswa, jadwal-kuliah, krs, khs, edom, kegiatan-mahasiswa, tagihan, termasuk
-  passthrough PDF cetak KRS/KHS); `server/api/auth/*` route khusus (perlu extract/set cookie
+- `server/api/` — server route Nitro (proxy ke REST-API-SIMAWA, pegang cookie httpOnly lewat h3
+  `getCookie`/`setCookie`). `server/api/simawa/[...path].ts` adalah catch-all proxy untuk SEMUA resource
+  (path lama mahasiswa/me, jadwal-kuliah, krs, khs, edom, kegiatan-mahasiswa, tagihan → daftar putih
+  `/v1/saya/*`, termasuk passthrough PDF cetak KRS/KHS) dengan konversi kunci camelCase ↔ snake_case
+  (`server/utils/simawaFormat.ts`; item tagihan tetap snake_case); `server/api/auth/*` route khusus (perlu extract/set cookie
   sesi, tidak bisa lewat catch-all generik).
-- `server/utils/` — logic server-only: `simawaApi.ts` (`simawaFetch()` + refresh token dedup),
+- `server/utils/` — logic server-only: `simawaApi.ts` (`simawaFetch()` + refresh token dedup + `teruskanRespons()`), `simawaFormat.ts`,
   `simawaSession.ts` (cookie helpers). **Tidak pernah** bisa ke-bundle ke browser (jaminan
   build-time Nitro, bukan cuma konvensi folder).
 - `shared/types/` — tipe yang dipakai KEDUA sisi (`app/` dan `server/`): envelope `ApiSuccess`/

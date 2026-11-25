@@ -23,7 +23,17 @@ const rawFetch = $fetch as unknown as (url: string, opts: Record<string, unknown
 
 export function apiFetch<T = unknown>(url: string, opts: ApiFetchOptions = {}): Promise<T> {
   if (import.meta.server) {
-    return rawFetch(url, { ...opts, headers: useRequestHeaders(['cookie']) }) as Promise<T>;
+    // X-Forwarded-For ikut diteruskan supaya REST-API-SIMAWA tetap melihat IP mahasiswa (bukan IP server Nitro)
+    // untuk throttle per IP saat SSR - dihitung SINKRON di sini, sama alasannya dengan useRequestHeaders di atas.
+    // (Rantai sama dengan forwardedForHeader() di server/utils/simawaApi.ts: XFF masuk + IP pemanggil langsung.)
+    const req = useRequestEvent()?.node.req;
+    const rantai = [req?.headers['x-forwarded-for'], req?.socket?.remoteAddress]
+      .flat()
+      .map((v) => v?.trim())
+      .filter((v): v is string => Boolean(v))
+      .join(', ');
+    const headers: Record<string, string> = { ...useRequestHeaders(['cookie']), ...(rantai ? { 'x-forwarded-for': rantai } : {}) };
+    return rawFetch(url, { ...opts, headers }) as Promise<T>;
   }
 
   // Header CSRF (double-submit cookie, lihat server/api/simawa/[...path].ts) - cuma dibaca dari

@@ -1,7 +1,5 @@
+// Profil akun yang login (id, name, email, roles, permissions) - GET /v1/saya/sesi REST-API-SIMAWA.
 export default defineEventHandler(async (event) => {
-  const res = await simawaFetch(event, '/auth/me');
-  const text = await res.text();
-  setResponseStatus(event, res.status);
-  setResponseHeader(event, 'Content-Type', 'application/json');
-  return text;
+  const res = await simawaFetch(event, '/saya/sesi');
+  return teruskanRespons(event, res);
 });
