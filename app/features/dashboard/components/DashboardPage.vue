@@ -83,7 +83,9 @@ onMounted(() => {
     const labelTa = kodeTahunAkademikSpp === kodeTahunAkademik ? 'tahun ini' : formatTahunAkademikLabel(kodeTahunAkademikSpp);
     showToast(`✓ Tagihan SPP ${labelTa} berhasil diterbitkan`, 'success');
   } else if (tagihan.value?.gagalBuatSpp) {
-    showToast(`✕ Gagal menerbitkan tagihan SPP: ${tagihan.value.gagalBuatSpp}`, 'error');
+    // Bukan error sistem (biasanya tarif SPP belum diatur keuangan) - cukup peringatan tanpa detail teknis;
+    // alasan lengkap tetap tampil di kartu "Tagihan Tahun Ini" untuk disampaikan ke bagian keuangan.
+    showToast('⚠ Tagihan SPP belum tersedia. Silakan hubungi bagian keuangan.', 'warning');
   }
 });
 
@@ -266,9 +268,12 @@ async function copyKodeBayar(kodeBayar: string) {
            SPP-nya justru belum terbit, mahasiswa perlu tahu harus menghubungi keuangan. -->
       <div v-else-if="tagihanBelumLunas.length === 0 && tagihan?.gagalBuatSpp" class="flex flex-col items-center gap-2 py-6 text-center">
         <AlertTriangle :size="28" class="text-[var(--color-warning)]" />
-        <p class="text-sm font-semibold text-[var(--color-text)]">Tagihan SPP belum bisa diterbitkan</p>
+        <p class="text-sm font-semibold text-[var(--color-text)]">Tagihan SPP belum tersedia</p>
         <p class="max-w-md text-xs text-[var(--color-text-muted)]">
-          {{ tagihan.gagalBuatSpp }}. Muat ulang halaman ini nanti, atau hubungi bagian keuangan jika masalah berlanjut.
+          Tagihan SPP semester ini belum bisa diterbitkan. Silakan hubungi bagian keuangan dan sampaikan keterangan berikut:
+        </p>
+        <p class="max-w-md rounded-lg bg-[var(--color-bg)] px-3 py-2 text-xs text-[var(--color-text-muted)]">
+          {{ tagihan.gagalBuatSpp }}
         </p>
       </div>
 
