@@ -36,7 +36,7 @@ const NAV_GROUPS = [
       { label: 'KRS', icon: ClipboardList, path: '/krs', enabled: true },
       { label: 'KHS', icon: BookMarked, path: '/khs', enabled: true },
       { label: 'Verifikasi Pertemuan', icon: ClipboardCheck, path: '/verifikasi-pertemuan', enabled: true },
-      { label: 'Transkrip Nilai', icon: FileBarChart, path: '/transkrip', enabled: false },
+      { label: 'Transkrip Nilai', icon: FileBarChart, path: '/transkrip', enabled: true },
     ],
   },
   {

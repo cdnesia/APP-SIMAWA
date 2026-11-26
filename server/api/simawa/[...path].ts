@@ -41,6 +41,7 @@ const PETA_PATH: [RegExp, string][] = [
   [/^khs\/print$/, 'khs/cetak'],
   [/^edom\/([^/]+)$/, 'edom/$1'],
   [/^transkrip$/, 'transkrip'],
+  [/^transkrip\/print$/, 'transkrip/cetak'],
   [/^kegiatan-mahasiswa$/, 'kegiatan'],
   [/^kegiatan-mahasiswa\/riwayat$/, 'kegiatan/riwayat'],
   [/^kegiatan-mahasiswa\/([^/]+)\/daftar$/, 'kegiatan/$1/daftar'],
@@ -75,7 +76,7 @@ function queryString(event: H3Event): string {
 
 // Catch-all proxy data mahasiswa (profil, jadwal kuliah, KRS, KHS, EDOM, transkrip, kegiatan, tagihan) - forward
 // method/query/body lewat simawaFetch() ke /v1/saya/*, konversi kunci camelCase <-> snake_case, dan PDF cetak
-// KRS/KHS diteruskan sebagai byte mentah (lihat teruskanRespons).
+// KRS/KHS/transkrip diteruskan sebagai byte mentah (lihat teruskanRespons).
 export default defineEventHandler(async (event) => {
   const method = event.method;
 

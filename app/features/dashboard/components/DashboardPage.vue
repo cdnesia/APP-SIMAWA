@@ -32,7 +32,7 @@ const QUICK_LINKS = [
   { label: 'Jadwal Kuliah', description: 'Lihat jadwal kelas Anda', icon: CalendarDays, path: '/jadwal-kuliah' },
   { label: 'KRS', description: 'Lihat & kontrak mata kuliah', icon: ClipboardList, path: '/krs' },
   { label: 'KHS', description: 'Kartu hasil studi per semester', icon: BookMarked, path: '/khs' },
-  { label: 'Transkrip Nilai', description: 'Riwayat nilai lengkap', icon: FileBarChart, path: null },
+  { label: 'Transkrip Nilai', description: 'Riwayat nilai lengkap', icon: FileBarChart, path: '/transkrip' },
   { label: 'Kegiatan Mahasiswa', description: 'KKN, PKL, seminar, wisuda', icon: Users2, path: null },
 ];
 
