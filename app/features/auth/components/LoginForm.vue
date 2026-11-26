@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { AlarmClock, CircleAlert, Eye, EyeOff, LoaderCircle, TriangleAlert, X } from '@lucide/vue';
-import logoUrl from '~/assets/logo-umjambi.png';
 
 const NAMA_KAMPUS = 'Universitas Muhammadiyah Jambi';
+// Dari folder public (URL tetap) - URL yang sama dipakai og:image & schema.org di pages/login.
+const logoUrl = '/logo-umjambi.png';
 
 const tahunSekarang = new Date().getFullYear();
 
@@ -271,10 +272,13 @@ async function handleSubmit() {
         <!-- Kop: lambang + nama kampus -->
         <div class="muncul-bertahap flex flex-col items-center text-center" style="--urutan: 1">
           <img :src="logoUrl" :alt="`Lambang ${NAMA_KAMPUS}`" class="h-16 w-16 object-contain sm:h-20 sm:w-20">
-          <p class="mt-3 text-sm font-bold uppercase leading-snug tracking-wide sm:text-base text-[var(--color-sidebar-bg)] dark:text-[var(--color-text)]">
+          <!-- h1 = judul utama halaman (sinyal SEO); tampilan tetap sama seperti teks biasa -->
+          <h1 class="mt-3 text-sm font-bold uppercase leading-snug tracking-wide text-[var(--color-sidebar-bg)] sm:text-base dark:text-[var(--color-text)]">
             {{ NAMA_KAMPUS }}
+          </h1>
+          <p class="mt-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-text-muted)] sm:text-[11px] sm:tracking-[0.25em]">
+            Sistem Informasi Mahasiswa
           </p>
-          <p class="mt-1 text-[10px] font-medium uppercase tracking-[0.18em] sm:text-[11px] sm:tracking-[0.25em] text-[var(--color-text-muted)]">Sistem Informasi Mahasiswa</p>
         </div>
 
         <Transition name="notif">
@@ -393,7 +397,7 @@ async function handleSubmit() {
         </div>
       </div>
 
-      <p class="muncul-bertahap mt-6 text-center text-xs text-[var(--color-sidebar-text-muted)]" style="--urutan: 6">&copy; {{ tahunSekarang }} {{ NAMA_KAMPUS }}</p>
+      <p class="muncul-bertahap mt-6 text-center text-xs text-[var(--color-sidebar-text-muted)]" style="--urutan: 6">&copy; {{ tahunSekarang }} SIMAWA {{ NAMA_KAMPUS }}</p>
     </div>
   </div>
 </template>

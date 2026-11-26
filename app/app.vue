@@ -9,7 +9,12 @@ import faviconUrl from '~/assets/favicon.png';
 useHead({
   titleTemplate: (title) => (title ? `${title} · SIMAWA` : 'SIMAWA · Universitas Muhammadiyah Jambi'),
   link: [{ rel: 'icon', type: 'image/png', href: faviconUrl }],
+  meta: [{ name: 'theme-color', content: '#172554' }],
 });
+
+// SEO: SEMUA halaman default TIDAK diindeks Google - isinya data pribadi mahasiswa di balik login.
+// Hanya halaman /login (pintu masuk publik) yang menimpa ini jadi "index, follow" (lihat pages/login).
+useSeoMeta({ robots: 'noindex, nofollow' });
 
 // Loading pindah halaman DISAMAKAN di seluruh app - dulu cuma progress bar tipis (NuxtLoadingIndicator)
 // yang gampang tidak kelihatan. `page:start`/`page:finish` adalah hook bawaan Nuxt yang menandai

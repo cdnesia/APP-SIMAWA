@@ -11,6 +11,8 @@ export default defineNuxtConfig({
   // baru halaman baru fade-in, mencegah 2 halaman tumpang-tindih sesaat.
   app: {
     pageTransition: { name: 'page', mode: 'out-in' },
+    // lang="id" membantu Google mengenali halaman berbahasa Indonesia (SEO & aksesibilitas).
+    head: { htmlAttrs: { lang: 'id' } },
   },
   // Default Nuxt menambahkan prefix folder ke nama komponen (mis. components/ui/Button.vue jadi
   // <UiButton/>) - dimatikan di sini supaya nama komponen tetap flat (<Button/>, <Card/>, dst),
@@ -30,5 +32,10 @@ export default defineNuxtConfig({
   // login langsung dengan NPM + password; APP-SIMAWA TIDAK menyimpan client_id/secret maupun shared secret apa pun.
   runtimeConfig: {
     simawaApiBase: process.env.SIMAWA_API_BASE ?? 'http://localhost:8000/v1',
+    // Domain publik aplikasi - dipakai canonical URL, Open Graph, robots.txt & sitemap.xml (SEO).
+    // Bisa diganti per lingkungan lewat env NUXT_PUBLIC_SITE_URL tanpa ubah kode.
+    public: {
+      siteUrl: 'https://simawa.umjambi.ac.id',
+    },
   },
 });
