@@ -113,7 +113,7 @@ function pesanGagalMasuk(err: unknown): Notifikasi {
     return {
       tipe: 'error',
       judul: 'Akun belum dapat digunakan',
-      pesan: getApiErrorMessage(err, 'Akun ini belum memiliki akses ke SIMAWA. Silakan hubungi BAAK untuk bantuan.'),
+      pesan: getApiErrorMessage(err, 'Akun ini belum memiliki akses ke SIMAWA. Silakan hubungi fakultas Anda.'),
     };
   }
   if (statusCode === 422) {
@@ -384,7 +384,13 @@ async function handleSubmit() {
         </form>
 
         <!-- Bantuan - supaya tidak jadi dead end saat lupa kata sandi -->
-        <p class="muncul-bertahap mt-5 text-center text-xs leading-relaxed text-[var(--color-primary)]" style="--urutan: 5">Hubungi BAAK apabila Anda lupa kata sandi.</p>
+        <!-- Teks biasa (bukan tautan) karena belum ada kanal reset mandiri - warna abu supaya tidak
+             dikira bisa diklik; nama unit ditebalkan sebagai tujuan yang jelas. -->
+        <div class="muncul-bertahap mt-6 border-t border-[var(--color-border)] pt-5 text-center" style="--urutan: 5">
+          <p class="text-xs text-[var(--color-text-muted)]">
+            Lupa kata sandi? <span class="font-semibold text-[var(--color-text)]">Silakan hubungi fakultas Anda.</span>
+          </p>
+        </div>
       </div>
 
       <p class="muncul-bertahap mt-6 text-center text-xs text-[var(--color-sidebar-text-muted)]" style="--urutan: 6">&copy; {{ tahunSekarang }} {{ NAMA_KAMPUS }}</p>
