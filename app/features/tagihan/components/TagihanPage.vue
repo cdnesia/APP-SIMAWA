@@ -60,6 +60,7 @@ const totalBelumLunas = computed(() => belumLunas.value.reduce((sum, t) => sum +
                 <th class="px-4 py-3 font-semibold">Periode</th>
                 <th class="px-4 py-3 text-right font-semibold">Ditagih</th>
                 <th class="px-4 py-3 text-right font-semibold">Terbayar</th>
+                <th class="px-4 py-3 text-right font-semibold">Sisa</th>
                 <th class="px-4 py-3 font-semibold">Batas Waktu</th>
                 <th class="px-4 py-3 font-semibold">Status</th>
               </tr>
